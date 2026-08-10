@@ -310,7 +310,20 @@ hotels.forEach(h=>{
   hotelSelect.appendChild(opt);
 });
 
+const thingsToDo = [
+  { icon:'🏔️', name:'Arco de Santa Catalina', tag:'5 min · Free', blurb:"Antigua's iconic golden-yellow arch, framed by Volcán de Agua. Go right at sunrise before the crowds arrive.", lat:14.5596256, lng:-90.7342772 },
+  { icon:'⛰️', name:'Cerro de la Cruz', tag:'20–30 min hike or tuk-tuk', blurb:'Hilltop viewpoint over the whole city and its ring of volcanoes — best in the morning for clear skies.', lat:14.5643144, lng:-90.7317686 },
+  { icon:'🌋', name:'Acatenango &amp; Fuego Overnight Hike', tag:'Full day + overnight · Book ahead', blurb:'A strenuous but bucket-list trek to a base camp with front-row views of an actively erupting volcano. Book with OX Expeditions, Trek Guatemala, or V-Hiking.', lat:14.5592416, lng:-90.7358276 },
+  { icon:'♨️', name:'Pacaya Volcano Half-Day Hike', tag:'Half day · Easier option', blurb:'A gentler volcano hike than Acatenango — roast marshmallows on still-warm volcanic rock and catch sunset views.', lat:null, lng:null },
+  { icon:'🍫', name:'ChocoMuseo Chocolate Class', tag:'~2 hrs · Central', blurb:'Hands-on bean-to-bar chocolate making class steps from the central park — fun for all ages.', lat:14.5573762, lng:-90.7339933 },
+  { icon:'☕', name:'Coffee Farm Tour', tag:'1–2 hrs · 10 min away', blurb:'Walk a working coffee plantation from picking to roasting, finishing with a tasting. Filadelfia Coffee Resort is a popular pick.', lat:14.5751593, lng:-90.7357011 },
+  { icon:'🧙', name:'Hobbitenango', tag:'Half day · Scenic', blurb:'A whimsical hillside park with panoramic volcano views and Tolkien-inspired photo spots — shuttle recommended for the steep road up.', lat:14.6019576, lng:-90.7027864 },
+  { icon:'🛶', name:'Lake Atitlán Day Trip', tag:'Full day · ~1 hr drive', blurb:"Guatemala's most famous lake, ringed by volcanoes and Maya lakeside villages — best done as a guided day tour from Antigua.", lat:null, lng:null },
+  { icon:'🛍️', name:'Chichicastenango Market', tag:'Thu &amp; Sun only', blurb:"One of Latin America's largest indigenous markets — textiles, crafts, and produce. Open only Thursdays and Sundays, so it lines up with Jan 28 or Jan 31.", lat:14.9427943, lng:-91.111722 },
+];
+
 const days = [...new Set(events.map(e=>e.day))];
+days.push('Explore');
 let activeDay = days[0];
 
 const dayTabsEl = document.getElementById('dayTabs');
@@ -325,10 +338,31 @@ days.forEach(d=>{
 
 const contentEl = document.getElementById('content');
 
+function renderTodo(){
+  contentEl.innerHTML = '';
+  thingsToDo.forEach(t=>{
+    const card = document.createElement('div');
+    card.className = 'event-card';
+    const mapLink = t.lat ? `<a class="btn" style="display:inline-block; margin-top:12px;" href="https://www.google.com/maps/search/?api=1&query=${t.lat},${t.lng}" target="_blank" rel="noopener">View on map</a>` : '';
+    card.innerHTML = `
+      <div class="ev-name">${t.icon} ${t.name}</div>
+      <div class="ev-time">${t.tag}</div>
+      <div class="ev-address" style="margin-top:8px; font-size:13.5px; line-height:1.5;">${t.blurb}</div>
+      ${mapLink}
+    `;
+    contentEl.appendChild(card);
+  });
+}
+
 function render(){
   document.querySelectorAll('.day-tab').forEach(t=>{
     t.classList.toggle('active', t.dataset.day === activeDay);
   });
+
+  if(activeDay === 'Explore'){
+    renderTodo();
+    return;
+  }
 
   const hotel = hotels.find(h=>h.id===hotelSelect.value);
   contentEl.innerHTML = '';
