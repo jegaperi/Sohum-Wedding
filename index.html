@@ -241,6 +241,14 @@
     font-family:'Space Grotesk', sans-serif;
     font-size:14px;
   }
+  .hotel-website-link{
+    display:inline-block;
+    margin-top:8px;
+    font-size:12px;
+    color:var(--gold);
+    text-decoration:none;
+    border-bottom:1px dotted var(--gold);
+  }
 
   footer{
     text-align:center; padding:26px 24px 8px;
@@ -254,6 +262,7 @@
     <div class="eyebrow">Destination Wedding</div>
     <h1>Sohum <em>&amp;</em> Isha</h1>
     <div class="sub">Antigua, Guatemala · Jan 28–31, 2027</div>
+    <a id="addAllCal" href="#" download="Sohum_Isha_Wedding.ics" style="display:inline-block; margin-top:10px; font-size:11.5px; color:var(--gold-dim); position:relative; text-decoration:none; border-bottom:1px dotted var(--gold-dim);">＋ Add full itinerary to your calendar</a>
   </div>
 
   <div class="day-tabs" id="dayTabs"></div>
@@ -264,16 +273,17 @@
   <div class="hotel-bar">
     <label for="hotelSelect">I'm staying at</label>
     <select id="hotelSelect"></select>
+    <a id="hotelWebsite" class="hotel-website-link" href="#" target="_blank" rel="noopener">Visit hotel website →</a>
   </div>
 
 <script>
 const hotels = [
-  { id:'soleil',   name:'Hotel Soleil Antigua',          lat:14.551486,   lng:-90.739967 },
-  { id:'porta',    name:'Porta Hotel Antigua',            lat:14.5531311,  lng:-90.7337022 },
-  { id:'santo',    name:'Casa Santo Domingo',             lat:14.5585993,  lng:-90.7279093 },
-  { id:'eterna',   name:'Hotel Eterna Primavera',         lat:14.5572925,  lng:-90.730295 },
-  { id:'camino',   name:'Camino Real Antigua Guatemala',  lat:14.5536355,  lng:-90.736145 },
-  { id:'convento', name:'El Convento Boutique Hotel',     lat:14.560147,   lng:-90.730972 },
+  { id:'soleil',   name:'Hotel Soleil Antigua',          lat:14.551486,   lng:-90.739967,  website:'https://soleilantigua.com/' },
+  { id:'porta',    name:'Porta Hotel Antigua',            lat:14.5531311,  lng:-90.7337022, website:'https://www.portahotelantigua.com/' },
+  { id:'santo',    name:'Casa Santo Domingo',             lat:14.5585993,  lng:-90.7279093, website:'https://www.casasantodomingo.com.gt/' },
+  { id:'eterna',   name:'Hotel Eterna Primavera',         lat:14.5572925,  lng:-90.730295,  website:'https://www.booking.com/hotel/gt/eterna-primavera-antigua.html' },
+  { id:'camino',   name:'Camino Real Antigua Guatemala',  lat:14.5536355,  lng:-90.736145,  website:'https://www.caminorealantigua.com.gt/' },
+  { id:'convento', name:'El Convento Boutique Hotel',     lat:14.560147,   lng:-90.730972,  website:'https://elconventoantigua.com/' },
 ];
 
 const dressImages = {
@@ -286,12 +296,12 @@ const dressImages = {
 
 
 const events = [
-  { day:'Thu 28', dayFull:'Thursday, Jan 28', name:'Welcome Dinner', time:'7:00 PM – 10:00 PM', venue:'Hotel Soleil', address:'9 Calle Poniente, Antigua, 03001, Guatemala', dress:'Summer Semi-Formal', lat:14.551486, lng:-90.739967, accent:'var(--gold)', dressImg:dressImages.welcome },
-  { day:'Fri 29', dayFull:'Friday, Jan 29', name:'Haldi', time:'9:30 AM – 12:30 PM', venue:'La Casa de la Ruina', address:'1a Calle Oriente 36, Antigua, Guatemala', dress:'Yellow &amp; orange festive Indian wear', lat:14.5608655, lng:-90.7287049, accent:'var(--gold)', dressImg:dressImages.haldi },
-  { day:'Fri 29', dayFull:'Friday, Jan 29', name:'Sangeet', time:'6:30 PM – 11:00 PM', venue:'La Ermita de la Cruz', address:'H72F+P99, Antigua, Guatemala', dress:'Bright &amp; colorful Indian festive', lat:14.5516, lng:-90.7268, accent:'var(--magenta)', dressImg:dressImages.sangeet },
-  { day:'Sat 30', dayFull:'Saturday, Jan 30', name:'Ceremony', time:'10:00 AM – 2:00 PM', venue:'Convento Santa Clara', address:'2nd Avenue North &amp; 2nd Street East, Antigua, Guatemala', dress:'Indian Formal (no ivory)', lat:14.5547673, lng:-90.7310089, accent:'var(--emerald)', dressImg:dressImages.ceremony },
-  { day:'Sat 30', dayFull:'Saturday, Jan 30', name:'Reception', time:'6:30 PM – 12:00 AM', venue:'Casa Santo Domingo', address:'3a Calle Oriente 28 A, Antigua, Guatemala', dress:'Black Tie Indian or Western Cocktail Attire', lat:14.5585993, lng:-90.7279093, accent:'var(--magenta)', dressImg:dressImages.reception },
-  { day:'Sun 31', dayFull:'Sunday, Jan 31', name:'Brunch', time:'11:00 AM – 2:00 PM', venue:'Tentative', address:'Location to be confirmed', dress:null, lat:null, lng:null, tentative:true, accent:'var(--gold-dim)' },
+  { day:'Thu 28', dayFull:'Thursday, Jan 28', name:'Welcome Dinner', time:'7:00 PM – 10:00 PM', venue:'Hotel Soleil', address:'9 Calle Poniente, Antigua, 03001, Guatemala', dress:'Summer Semi-Formal', lat:14.551486, lng:-90.739967, accent:'var(--gold)', dressImg:dressImages.welcome, calStart:'20270129T010000Z', calEnd:'20270129T040000Z' },
+  { day:'Fri 29', dayFull:'Friday, Jan 29', name:'Haldi', time:'9:30 AM – 12:30 PM', venue:'La Casa de la Ruina', address:'1a Calle Oriente 36, Antigua, Guatemala', dress:'Yellow &amp; orange festive Indian wear', lat:14.5608655, lng:-90.7287049, accent:'var(--gold)', dressImg:dressImages.haldi, calStart:'20270129T153000Z', calEnd:'20270129T183000Z' },
+  { day:'Fri 29', dayFull:'Friday, Jan 29', name:'Sangeet', time:'6:30 PM – 11:00 PM', venue:'La Ermita de la Cruz', address:'H72F+P99, Antigua, Guatemala', dress:'Bright &amp; colorful Indian festive', lat:14.5516, lng:-90.7268, accent:'var(--magenta)', dressImg:dressImages.sangeet, calStart:'20270130T003000Z', calEnd:'20270130T050000Z' },
+  { day:'Sat 30', dayFull:'Saturday, Jan 30', name:'Ceremony', time:'10:00 AM – 2:00 PM', venue:'Convento Santa Clara', address:'2nd Avenue North &amp; 2nd Street East, Antigua, Guatemala', dress:'Indian Formal (no ivory)', lat:14.5547673, lng:-90.7310089, accent:'var(--emerald)', dressImg:dressImages.ceremony, calStart:'20270130T160000Z', calEnd:'20270130T200000Z' },
+  { day:'Sat 30', dayFull:'Saturday, Jan 30', name:'Reception', time:'6:30 PM – 12:00 AM', venue:'Casa Santo Domingo', address:'3a Calle Oriente 28 A, Antigua, Guatemala', dress:'Black Tie Indian or Western Cocktail Attire', lat:14.5585993, lng:-90.7279093, accent:'var(--magenta)', dressImg:dressImages.reception, calStart:'20270131T003000Z', calEnd:'20270131T060000Z' },
+  { day:'Sun 31', dayFull:'Sunday, Jan 31', name:'Brunch', time:'11:00 AM – 2:00 PM', venue:'Tentative', address:'Location to be confirmed', dress:null, lat:null, lng:null, tentative:true, accent:'var(--gold-dim)', calStart:'20270131T170000Z', calEnd:'20270131T200000Z' },
 ];
 
 function haversine(lat1,lon1,lat2,lon2){
@@ -303,7 +313,36 @@ function haversine(lat1,lon1,lat2,lon2){
 }
 function fmtMin(m){ return m < 1 ? '<1 min' : Math.round(m)+' min'; }
 
+function stripTags(s){ return (s||'').replace(/<[^>]*>/g,''); }
+
+function icsEscape(s){ return (s||'').replace(/[\\,;]/g, m=>'\\'+m).replace(/\n/g,'\\n'); }
+
+function buildICS(evList){
+  const lines = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Sohum & Isha Wedding//EN','CALSCALE:GREGORIAN'];
+  evList.forEach((ev,i)=>{
+    const desc = ev.dress ? 'Dress code: ' + stripTags(ev.dress) : '';
+    lines.push(
+      'BEGIN:VEVENT',
+      `UID:${ev.name.replace(/\s+/g,'')}-sohumisha-${i}@wedding`,
+      `DTSTAMP:${ev.calStart}`,
+      `DTSTART:${ev.calStart}`,
+      `DTEND:${ev.calEnd}`,
+      `SUMMARY:${icsEscape(ev.name)}`,
+      `LOCATION:${icsEscape(ev.venue + (ev.address ? ', ' + ev.address : ''))}`,
+      `DESCRIPTION:${icsEscape(desc)}`,
+      'END:VEVENT'
+    );
+  });
+  lines.push('END:VCALENDAR');
+  return lines.join('\r\n');
+}
+
+function icsHref(evList){
+  return 'data:text/calendar;charset=utf8,' + encodeURIComponent(buildICS(evList));
+}
+
 const hotelSelect = document.getElementById('hotelSelect');
+document.getElementById('addAllCal').href = icsHref(events);
 hotels.forEach(h=>{
   const opt = document.createElement('option');
   opt.value = h.id; opt.textContent = h.name;
@@ -359,12 +398,14 @@ function render(){
     t.classList.toggle('active', t.dataset.day === activeDay);
   });
 
+  const hotel = hotels.find(h=>h.id===hotelSelect.value);
+  document.getElementById('hotelWebsite').href = hotel.website;
+
   if(activeDay === 'Explore'){
     renderTodo();
     return;
   }
 
-  const hotel = hotels.find(h=>h.id===hotelSelect.value);
   contentEl.innerHTML = '';
 
   events.filter(ev=>ev.day===activeDay).forEach(ev=>{
@@ -391,6 +432,7 @@ function render(){
       const mapsHref = `https://www.google.com/maps/dir/?api=1&origin=${hotel.lat},${hotel.lng}&destination=${ev.lat},${ev.lng}`;
       actionsHTML = `<div class="card-actions">
         <a class="btn primary" href="${mapsHref}" target="_blank" rel="noopener">Get directions</a>
+        <a class="btn" href="${icsHref([ev])}" download="${ev.name.replace(/\s+/g,'_')}.ics">Add to calendar</a>
       </div>`;
       mapHTML = `<div class="map-embed">
         <iframe loading="lazy" src="https://www.google.com/maps?q=${ev.lat},${ev.lng}&hl=en&z=16&output=embed"></iframe>
