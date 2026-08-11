@@ -73,6 +73,15 @@
   .topbar .sub{
     color:var(--muted); font-size:13px; position:relative;
   }
+  .add-all-link{
+    display:inline-block;
+    margin-top:10px;
+    font-size:11.5px;
+    color:var(--gold-dim);
+    position:relative;
+    text-decoration:none;
+    border-bottom:1px dotted var(--gold-dim);
+  }
   .stay-note{
     color:var(--gold-dim); font-size:11.5px; margin-top:8px;
     position:relative; font-weight:500;
@@ -205,6 +214,31 @@
     border-color:var(--gold);
   }
 
+  .cal-menu{position:relative; flex:1;}
+  .cal-toggle{width:100%;}
+  .cal-dropdown{
+    display:none;
+    position:absolute;
+    left:0; right:0; bottom:calc(100% + 6px);
+    background:#ffffff;
+    border:1px solid var(--line);
+    border-radius:10px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.12);
+    overflow:hidden;
+    z-index:60;
+  }
+  .cal-menu.open .cal-dropdown{display:block;}
+  .cal-dropdown a{
+    display:block;
+    padding:11px 14px;
+    font-size:13px;
+    color:var(--ink);
+    text-decoration:none;
+    border-bottom:1px solid var(--line);
+  }
+  .cal-dropdown a:last-child{border-bottom:none;}
+  .cal-dropdown a:active{background:rgba(0,0,0,0.05);}
+
   .map-embed{
     margin-top:14px;
     border-radius:10px;
@@ -250,6 +284,71 @@
     border-bottom:1px dotted var(--gold);
   }
 
+  /* ---------- SAMPLE ITINERARIES ---------- */
+  .itin-section{
+    margin-top:28px;
+    padding-top:20px;
+    border-top:1px solid var(--line);
+  }
+  .itin-heading{
+    font-family:'Fraunces', serif;
+    font-size:13px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--gold-dim);
+  }
+  .itin-sub{
+    font-size:12.5px;
+    color:var(--muted);
+    margin-top:6px;
+    margin-bottom:16px;
+  }
+  .itin-tabs{
+    display:flex;
+    gap:8px;
+    margin-bottom:14px;
+  }
+  .itin-tab{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:12.5px;
+    font-weight:500;
+    padding:8px 16px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    background:transparent;
+    color:var(--muted);
+  }
+  .itin-tab.active{
+    background:var(--gold);
+    color:var(--ink);
+    border-color:var(--gold);
+  }
+  .itin-day{
+    padding:14px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .itin-day:last-child{border-bottom:none;}
+  .itin-day-num{
+    font-family:'Fraunces', serif;
+    font-size:11.5px;
+    color:var(--gold-dim);
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    margin-bottom:4px;
+  }
+  .itin-day-title{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size:15.5px;
+    color:var(--ink);
+    margin-bottom:4px;
+  }
+  .itin-day-desc{
+    font-size:13px;
+    color:var(--muted);
+    line-height:1.5;
+  }
+
   footer{
     text-align:center; padding:26px 24px 8px;
     color:var(--muted); font-size:11px;
@@ -262,7 +361,7 @@
     <div class="eyebrow">Destination Wedding</div>
     <h1>Sohum <em>&amp;</em> Isha</h1>
     <div class="sub">Antigua, Guatemala · Jan 28–31, 2027</div>
-    <a id="addAllCal" href="#" download="Sohum_Isha_Wedding.ics" style="display:inline-block; margin-top:10px; font-size:11.5px; color:var(--gold-dim); position:relative; text-decoration:none; border-bottom:1px dotted var(--gold-dim);">＋ Add full itinerary to your calendar</a>
+    <a id="addAllCal" href="#" class="add-all-link">＋ Add all events to your calendar (.ics)</a>
   </div>
 
   <div class="day-tabs" id="dayTabs"></div>
@@ -315,6 +414,62 @@ function fmtMin(m){ return m < 1 ? '<1 min' : Math.round(m)+' min'; }
 
 function stripTags(s){ return (s||'').replace(/<[^>]*>/g,''); }
 
+function gcalHref(ev){
+  const details = ev.dress ? 'Dress code: ' + stripTags(ev.dress) : '';
+  const location = ev.venue + (ev.address ? ', ' + stripTags(ev.address) : '');
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: ev.name,
+    dates: `${ev.calStart}/${ev.calEnd}`,
+    details: details,
+    location: location
+  });
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
+function toISO(compact){
+  // '20270129T010000Z' -> '2027-01-29T01:00:00Z'
+  return compact.replace(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/, '$1-$2-$3T$4:$5:$6Z');
+}
+
+function toMinutes(compact){
+  const iso = toISO(compact);
+  return new Date(iso).getTime() / 60000;
+}
+
+function outlookHref(ev){
+  const details = ev.dress ? 'Dress code: ' + stripTags(ev.dress) : '';
+  const location = ev.venue + (ev.address ? ', ' + stripTags(ev.address) : '');
+  const params = new URLSearchParams({
+    path: '/calendar/action/compose',
+    rru: 'addevent',
+    startdt: toISO(ev.calStart),
+    enddt: toISO(ev.calEnd),
+    subject: ev.name,
+    location: location,
+    body: details
+  });
+  return `https://outlook.live.com/calendar/0/deeplink/compose?${params.toString()}`;
+}
+
+function yahooHref(ev){
+  const details = ev.dress ? 'Dress code: ' + stripTags(ev.dress) : '';
+  const location = ev.venue + (ev.address ? ', ' + stripTags(ev.address) : '');
+  const durMin = Math.round(toMinutes(ev.calEnd) - toMinutes(ev.calStart));
+  const dur = String(Math.floor(durMin/60)).padStart(2,'0') + String(durMin%60).padStart(2,'0');
+  const params = new URLSearchParams({
+    v: '60',
+    view: 'd',
+    type: '20',
+    title: ev.name,
+    st: ev.calStart,
+    dur: dur,
+    desc: details,
+    in_loc: location
+  });
+  return `https://calendar.yahoo.com/?${params.toString()}`;
+}
+
 function icsEscape(s){ return (s||'').replace(/[\\,;]/g, m=>'\\'+m).replace(/\n/g,'\\n'); }
 
 function buildICS(evList){
@@ -341,8 +496,67 @@ function icsHref(evList){
   return 'data:text/calendar;charset=utf8,' + encodeURIComponent(buildICS(evList));
 }
 
+function isIOS(){
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+// iOS Safari recognizes text/calendar data: links and offers "Add to Calendar" directly.
+// Everywhere else, Chrome blocks top-level navigation to data: URLs from a link click,
+// so we build a Blob and trigger the download via a temporary, in-DOM anchor instead.
+function downloadICS(evList, filename){
+  if(isIOS()){
+    window.location.href = icsHref(evList);
+    return;
+  }
+  const blob = new Blob([buildICS(evList)], {type:'text/calendar;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+}
+
+function calDropdown(ev, idx){
+  return `
+    <div class="cal-menu">
+      <button type="button" class="btn cal-toggle">Add to calendar ▾</button>
+      <div class="cal-dropdown">
+        <a href="${gcalHref(ev)}" target="_blank" rel="noopener">Google</a>
+        <a href="${outlookHref(ev)}" target="_blank" rel="noopener">Outlook.com</a>
+        <a href="${yahooHref(ev)}" target="_blank" rel="noopener">Yahoo</a>
+        <a href="#" class="ics-download" data-idx="${idx}" data-filename="${ev.name.replace(/\s+/g,'_')}.ics">Apple / Outlook desktop (.ics)</a>
+      </div>
+    </div>
+  `;
+}
+
+document.addEventListener('click', (e)=>{
+  const toggle = e.target.closest('.cal-toggle');
+  document.querySelectorAll('.cal-menu.open').forEach(m=>{
+    if(!toggle || m !== toggle.closest('.cal-menu')) m.classList.remove('open');
+  });
+  if(toggle){
+    toggle.closest('.cal-menu').classList.toggle('open');
+  }
+
+  const icsLink = e.target.closest('.ics-download');
+  if(icsLink){
+    e.preventDefault();
+    const idx = Number(icsLink.dataset.idx);
+    downloadICS([events[idx]], icsLink.dataset.filename);
+  }
+});
+
 const hotelSelect = document.getElementById('hotelSelect');
-document.getElementById('addAllCal').href = icsHref(events);
+const addAllCalLink = document.getElementById('addAllCal');
+addAllCalLink.addEventListener('click', (e)=>{
+  e.preventDefault();
+  downloadICS(events, 'Sohum_Isha_Wedding.ics');
+});
 hotels.forEach(h=>{
   const opt = document.createElement('option');
   opt.value = h.id; opt.textContent = h.name;
@@ -377,6 +591,31 @@ days.forEach(d=>{
 
 const contentEl = document.getElementById('content');
 
+const sampleItineraries = {
+  3: [
+    { title:'Settle In, Explore Antigua', desc:"Arrive and wander the cobblestone streets. Walk to the Arco de Santa Catalina, climb Cerro de la Cruz for the city view, and browse the central park in the evening." },
+    { title:'Volcano Day', desc:"Half-day hike up Pacaya Volcano — roast marshmallows on warm volcanic rock and catch sunset. Back in town, ChocoMuseo for a quick chocolate-making class or a relaxed dinner." },
+    { title:'Coffee &amp; Departure', desc:"Morning coffee farm tour at Filadelfia before heading out, or a last walk through the market stalls near the center." },
+  ],
+  5: [
+    { title:'Settle In, Explore Antigua', desc:"Arrive and wander the cobblestone streets. Arco de Santa Catalina, Cerro de la Cruz, and the central park." },
+    { title:'Coffee &amp; Chocolate', desc:"Coffee farm tour in the morning, ChocoMuseo chocolate-making class in the afternoon — both an easy walk or short ride from the center." },
+    { title:'Acatenango &amp; Fuego Hike (Day 1 of 2)', desc:"Trek up to base camp for front-row views of Fuego erupting. Overnight camping with a guided group." },
+    { title:'Acatenango &amp; Fuego Hike (Day 2)', desc:"Sunrise views, then descend back to Antigua by early afternoon. Rest and recover — maybe a slow dinner in town." },
+    { title:'Lake Atitlán Day Trip', desc:"Full-day guided trip to the lake — boat between Maya villages ringed by volcanoes, then back to Antigua by evening." },
+  ],
+  7: [
+    { title:'Settle In, Explore Antigua', desc:"Arrive and wander the cobblestone streets. Arco de Santa Catalina, Cerro de la Cruz, and the central park." },
+    { title:'Coffee &amp; Chocolate', desc:"Coffee farm tour in the morning, ChocoMuseo chocolate-making class in the afternoon." },
+    { title:'Pacaya Volcano Half-Day', desc:"Easier volcano hike — roast marshmallows on warm volcanic rock, sunset views, back in town for dinner." },
+    { title:'Acatenango &amp; Fuego Hike (Day 1 of 2)', desc:"Trek up to base camp for front-row views of Fuego erupting. Overnight camping with a guided group." },
+    { title:'Acatenango &amp; Fuego Hike (Day 2)', desc:"Sunrise views, then descend back to Antigua by early afternoon. Rest day — Hobbitenango for golden-hour views if there's energy left." },
+    { title:'Lake Atitlán Day Trip', desc:"Full-day guided trip to the lake — boat between Maya villages ringed by volcanoes." },
+    { title:'Chichicastenango Market &amp; Departure', desc:"If your last day falls on a Thursday or Sunday, this is Guatemala's largest indigenous market — about 1.5 hrs from Antigua. Otherwise, a relaxed final morning in town before heading out." },
+  ],
+};
+let activeItinLen = 3;
+
 function renderTodo(){
   contentEl.innerHTML = '';
   thingsToDo.forEach(t=>{
@@ -390,6 +629,48 @@ function renderTodo(){
       ${mapLink}
     `;
     contentEl.appendChild(card);
+  });
+
+  const itinSection = document.createElement('div');
+  itinSection.className = 'itin-section';
+  itinSection.innerHTML = `
+    <div class="itin-heading">Sample Itineraries</div>
+    <div class="itin-sub">If you're extending your trip, here's a rough shape for a few stay lengths.</div>
+    <div class="itin-tabs" id="itinTabs"></div>
+    <div class="itin-days" id="itinDays"></div>
+  `;
+  contentEl.appendChild(itinSection);
+
+  const itinTabsEl = document.getElementById('itinTabs');
+  [3,5,7].forEach(len=>{
+    const btn = document.createElement('button');
+    btn.className = 'itin-tab' + (len===activeItinLen ? ' active' : '');
+    btn.textContent = len + ' Days';
+    btn.addEventListener('click', ()=>{
+      activeItinLen = len;
+      document.querySelectorAll('.itin-tab').forEach(t=>t.classList.remove('active'));
+      btn.classList.add('active');
+      renderItinDays();
+    });
+    itinTabsEl.appendChild(btn);
+  });
+  renderItinDays();
+}
+
+function renderItinDays(){
+  const itinDaysEl = document.getElementById('itinDays');
+  itinDaysEl.innerHTML = '';
+  sampleItineraries[activeItinLen].forEach((d,i)=>{
+    const row = document.createElement('div');
+    row.className = 'itin-day';
+    row.innerHTML = `
+      <div class="itin-day-num">Day ${i+1}</div>
+      <div>
+        <div class="itin-day-title">${d.title}</div>
+        <div class="itin-day-desc">${d.desc}</div>
+      </div>
+    `;
+    itinDaysEl.appendChild(row);
   });
 }
 
@@ -432,7 +713,7 @@ function render(){
       const mapsHref = `https://www.google.com/maps/dir/?api=1&origin=${hotel.lat},${hotel.lng}&destination=${ev.lat},${ev.lng}`;
       actionsHTML = `<div class="card-actions">
         <a class="btn primary" href="${mapsHref}" target="_blank" rel="noopener">Get directions</a>
-        <a class="btn" href="${icsHref([ev])}" download="${ev.name.replace(/\s+/g,'_')}.ics">Add to calendar</a>
+        ${calDropdown(ev, events.indexOf(ev))}
       </div>`;
       mapHTML = `<div class="map-embed">
         <iframe loading="lazy" src="https://www.google.com/maps?q=${ev.lat},${ev.lng}&hl=en&z=16&output=embed"></iframe>
