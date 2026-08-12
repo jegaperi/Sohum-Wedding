@@ -3,10 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <title>Sohum &amp; Isha</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#ffffff">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,500&family=Space+Grotesk:wght@400;500;600&display=swap');
 
@@ -88,6 +90,52 @@
   }
 
   /* ---------- DAY TABS ---------- */
+  /* ---------- INSTALL BANNER ---------- */
+  .install-banner{
+    display:none;
+    align-items:center;
+    gap:10px;
+    margin:14px 16px 0;
+    padding:12px 14px;
+    border-radius:12px;
+    background:rgba(227,165,61,0.08);
+    border:1px solid rgba(227,165,61,0.3);
+  }
+  .install-banner.show{display:flex;}
+  .install-banner-icon{font-size:22px; flex:none;}
+  .install-banner-text{flex:1; min-width:0;}
+  .install-banner-title{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size:14px;
+    color:var(--ink);
+  }
+  .install-banner-sub{
+    font-size:11.5px;
+    color:var(--muted);
+    margin-top:2px;
+    line-height:1.4;
+  }
+  .install-btn{
+    flex:none;
+    font-size:12.5px;
+    font-weight:500;
+    padding:8px 14px;
+    border-radius:8px;
+    background:var(--gold);
+    color:var(--ink);
+    border:1px solid var(--gold);
+  }
+  .install-dismiss{
+    flex:none;
+    background:none;
+    border:none;
+    color:var(--muted);
+    font-size:14px;
+    padding:4px 6px;
+    cursor:pointer;
+  }
+
   .day-tabs{
     display:flex;
     gap:8px;
@@ -169,6 +217,39 @@
     border-radius:7px;
     border:1px solid var(--line);
     flex:none;
+    cursor:zoom-in;
+  }
+
+  .lightbox{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.9);
+    z-index:200;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    overflow:auto;
+  }
+  .lightbox.show{display:flex;}
+  .lightbox img{
+    max-width:100%;
+    max-height:100%;
+    border-radius:10px;
+    touch-action:pinch-zoom;
+  }
+  .lightbox-close{
+    position:fixed;
+    top:calc(16px + env(safe-area-inset-top, 0px));
+    right:16px;
+    width:38px; height:38px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.15);
+    color:#fff;
+    border:none;
+    font-size:18px;
+    line-height:1;
+    z-index:201;
   }
 
   .travel-row{
@@ -364,8 +445,23 @@
     <a id="addAllCal" href="#" class="add-all-link">＋ Add all events to your calendar (.ics)</a>
   </div>
 
+  <div id="installBanner" class="install-banner">
+    <div class="install-banner-icon">📲</div>
+    <div class="install-banner-text">
+      <div class="install-banner-title">Install this app</div>
+      <div class="install-banner-sub" id="installBannerSub">for quick, one-tap access</div>
+    </div>
+    <button id="installBtn" class="install-btn" style="display:none;">Install</button>
+    <button id="installDismiss" class="install-dismiss" aria-label="Dismiss">✕</button>
+  </div>
+
   <div class="day-tabs" id="dayTabs"></div>
   <div class="content" id="content"></div>
+
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lightboxClose" aria-label="Close">✕</button>
+    <img id="lightboxImg" src="" alt="Dress code reference, full size">
+  </div>
 
   <footer>Travel times are estimates · walking ≈ 5 km/h, driving ≈ 20 km/h in‑town + wait.</footer>
 
@@ -549,6 +645,18 @@ document.addEventListener('click', (e)=>{
     const idx = Number(icsLink.dataset.idx);
     downloadICS([events[idx]], icsLink.dataset.filename);
   }
+
+  const thumb = e.target.closest('.dress-thumb');
+  if(thumb){
+    document.getElementById('lightboxImg').src = thumb.src;
+    document.getElementById('lightbox').classList.add('show');
+  }
+});
+
+const lightbox = document.getElementById('lightbox');
+document.getElementById('lightboxClose').addEventListener('click', ()=> lightbox.classList.remove('show'));
+lightbox.addEventListener('click', (e)=>{
+  if(e.target === lightbox) lightbox.classList.remove('show');
 });
 
 const hotelSelect = document.getElementById('hotelSelect');
@@ -740,6 +848,65 @@ function render(){
 
 hotelSelect.addEventListener('change', render);
 render();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  });
+}
+
+// ---------- Install banner ----------
+(function(){
+  const banner = document.getElementById('installBanner');
+  const sub = document.getElementById('installBannerSub');
+  const installBtn = document.getElementById('installBtn');
+  const dismissBtn = document.getElementById('installDismiss');
+  let deferredPrompt = null;
+
+  function isStandalone(){
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  }
+  function isIOSDevice(){
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  }
+  function wasDismissed(){
+    try { return localStorage.getItem('installBannerDismissed') === '1'; }
+    catch(e){ return false; }
+  }
+  function dismiss(){
+    banner.classList.remove('show');
+    try { localStorage.setItem('installBannerDismissed', '1'); } catch(e){}
+  }
+
+  dismissBtn.addEventListener('click', dismiss);
+
+  if(isStandalone() || wasDismissed()) return;
+
+  if(isIOSDevice()){
+    sub.innerHTML = 'Tap <strong>Share</strong> <span style="font-size:15px;">⬆️</span> below, then <strong>"Add to Home Screen"</strong>';
+    banner.classList.add('show');
+  } else {
+    window.addEventListener('beforeinstallprompt', (e)=>{
+      e.preventDefault();
+      deferredPrompt = e;
+      sub.textContent = 'for quick, one-tap access — no browser tabs';
+      installBtn.style.display = 'inline-block';
+      banner.classList.add('show');
+    });
+
+    installBtn.addEventListener('click', async ()=>{
+      if(!deferredPrompt) return;
+      banner.classList.remove('show');
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+    });
+
+    window.addEventListener('appinstalled', () => {
+      banner.classList.remove('show');
+    });
+  }
+})();
 </script>
 </body>
 </html>
